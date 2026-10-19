@@ -316,6 +316,7 @@ def _parse_selfie(raw: Any, global_defaults: dict[str, Any]) -> SelfieConfig:
         artist_style=_as_str(raw.get("artist_style")) or "random",
         variation=_as_float(raw.get("variation"), 0.85, low=0.0, high=1.0),
         no_repeat_window=int(_as_float(raw.get("no_repeat_window"), 2.0, low=1.0, high=10.0)),
+        use_prompt_constraint=_as_bool(raw.get("use_prompt_constraint"), True),
         anatomy_check=_as_bool(raw.get("anatomy_check"), False),
         anatomy_retries=int(_as_float(raw.get("anatomy_retries"), 1.0, low=0.0, high=3.0)),
         reference_max=int(_as_float(raw.get("reference_max"), 4.0, low=1.0, high=10.0)),

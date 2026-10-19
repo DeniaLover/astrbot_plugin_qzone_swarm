@@ -432,6 +432,9 @@ class BotRuntime:
                 system, user = build_selfie_prompt_prompt(
                     self.profile, persona_name, persona_prompt,
                     latest_post=draft.get("content", ""),
+                    use_constraint=bool(
+                        getattr(self.config.selfie, "use_prompt_constraint", True)
+                    ),
                 )
                 scene = clean_text(
                     await self.bridge.generate(

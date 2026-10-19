@@ -173,12 +173,28 @@ def build_post_from_trajectory_prompt(
 # --------------------------------------------------------------------------- #
 # 自拍生图提示词 / 配文
 # --------------------------------------------------------------------------- #
+# 从 qzone_swarm/NAI_Prompt_Constraint_v2.md 的「模块 5：画面具体内容」提炼。
+# 完整规范是给「一次性输出整条 NAI 提示词」的场景用的；本插件的分工是
+# 模型只写画面内容、外观与画风由 PromptLibrary 统一拼装，所以只取其中
+# 「拒绝站桩、要有事件与物理反馈」这一条真正影响出片质量的规则。
+SCENE_DYNAMICS_BLOCK = (
+    "【画面必须「有事发生」】\n"
+    "不要写成原地站着摆拍。下面三类至少体现两项：\n"
+    "1. 明确的动作与姿态张力 —— 正在做一件具体的事，身体有倾向、有动势；\n"
+    "2. 人物与环境的物理互动 —— 风吹起什么、踩到水花、手里的东西发光、\n"
+    "   光斑落在身上、衣角被带起；\n"
+    "3. 动态视觉元素 —— 飘落的花瓣、飞舞的尘埃、水汽、旋转的落叶、光斑。\n"
+    "构图要让人物和周围环境产生关系，而不是站在一片空白里。"
+)
+
+
 def build_selfie_prompt_prompt(
     profile: BotProfile,
     persona_name: str,
     persona_prompt: str,
     *,
     latest_post: str = "",
+    use_constraint: bool = True,
 ) -> tuple[str, str]:
     """让模型想「这一张自拍拍的是什么画面」。
 
@@ -211,8 +227,10 @@ def build_selfie_prompt_prompt(
         "发色、瞳色、衣服款式等外貌特征，也不要写画风、画质、镜头参数 ——",
         "那些由系统统一控制，你写了会被忽略。",
         "",
-        "只输出画面描述本身。",
     ]
+    if use_constraint:
+        lines += [SCENE_DYNAMICS_BLOCK, ""]
+    lines.append("只输出画面描述本身。")
     return system, "\n".join(lines)
 
 

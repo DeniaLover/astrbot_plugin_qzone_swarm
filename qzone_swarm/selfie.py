@@ -117,6 +117,8 @@ class SelfieConfig:
     variation: float = 0.85
     # 「不许连续重复」的窗口：最近几张用过的不再抽（构图/画师串/服装/发型都适用）
     no_repeat_window: int = 2
+    # 给「想画面」这一步加上画面张力约束（源自 NAI_Prompt_Constraint_v2.md）
+    use_prompt_constraint: bool = True
     # 出图后让视觉模型复检人体结构，不合格就重画。
     # ⚠️ 需要有**支持图像输入的**模型；本机现有 key（方舟套餐 / 中转）都不支持，
     #    所以默认关闭。没有视觉能力时打开只会白等一轮。

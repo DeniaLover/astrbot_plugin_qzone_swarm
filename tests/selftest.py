@@ -1078,6 +1078,19 @@ def test_scene_library() -> None:
     _random.seed(20261019)
     comp_positions = lib.composition()
     check("构图池非空", len(comp_positions) >= 4, str(len(comp_positions)))
+
+    # ---- 画面张力约束（源自 NAI_Prompt_Constraint_v2.md 模块 5）----
+    from qzone_swarm.compose import SCENE_DYNAMICS_BLOCK, build_selfie_prompt_prompt
+    from qzone_swarm.models import BotProfile as _BP
+
+    _prof = _BP(platform_id="t", name="测试", persona_id="风堇")
+    _, _u_on = build_selfie_prompt_prompt(_prof, "风堇", "人设", use_constraint=True)
+    _, _u_off = build_selfie_prompt_prompt(_prof, "风堇", "人设", use_constraint=False)
+    check("张力约束默认注入", SCENE_DYNAMICS_BLOCK in _u_on)
+    check("张力约束可关闭", SCENE_DYNAMICS_BLOCK not in _u_off)
+    check("约束块提到动作/互动/动态", all(
+        k in SCENE_DYNAMICS_BLOCK for k in ("动作", "互动", "动态")))
+    check("约束开启后提示词更长", len(_u_on) > len(_u_off) + 100)
     prev = ""
     repeats = 0
     for _ in range(30):
@@ -1255,6 +1268,10 @@ def test_scene_library() -> None:
     neg_mo = lib.resolved_negative(persona_id="莫宁")
     check("莫宁负向不压成熟", "mature female" not in neg_mo, neg_mo[-90:])
     check("无 persona 时不合并", lib.resolved_negative() == lib.negative())
+    # 负向词合并了 NAI_Prompt_Constraint_v2.md 的通用基底 UC
+    _n = lib.negative().lower()
+    check("负向含约束文件基底词", all(
+        k in _n for k in ("jpeg artifacts", "unfinished", "artistic error", "scan", "extra digits")))
 
     # variation 配置
     check("variation 默认 0.85（尽量每张都换）",
