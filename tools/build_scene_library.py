@@ -48,6 +48,11 @@ COLLECTIONS: list[tuple[str, str]] = [
     ("suozhang", "所长N4.5常规法典"),
     ("suozhang_nai5", "所长N5常规法典"),
     ("jiegou_yuandian", "解构原典"),
+    # 2026-10 新增：社区图包 + 画师词典（画师词典的条目会按分类路由进 styles）
+    ("nai5_community_pack", "梦神·N5社区图包"),
+    ("nai45_community_pack", "梦神·N4.5社区图包"),
+    ("artist_nai5_personal", "NAI5画师词典"),
+    ("artist_nai45_personal", "NAI4.5画师词典"),
 ]
 
 # 明确不收录（供日志说明用）
@@ -55,46 +60,42 @@ EXCLUDED_R18 = ["suozhang_r18", "suozhang_nai5_r18", "mengshen_r18"]
 
 # 露骨性内容：命中即丢
 NSFW_HARD = (
+    # 真·露骨：裸体 / 性器官 / 性行为。这一类不商量。
     "nude", "naked", "nipple", "areola", "penis", "vagina", "pussy", "vaginal",
     "cum", "semen", "erection", "sex", "sexual", "intercourse", "sperm",
-    "explicit", "hentai", "nsfw", "r18", "r-18", "xxx", "lewd", "seductive",
-    "topless", "bottomless", "undressing", "exposed breasts", "large breasts",
-    "huge breasts", "breasts out", "panties", "underwear", "lingerie", "bra ",
-    "breasts", "cleavage", "thigh gap", "midriff", "navel focus", "bare ass",
-    "bikini", "swimsuit", "micro bikini", "see-through", "transparent clothing",
-    "bondage", "shibari", "ahegao", "orgasm", "masturbation", "fetish",
-    "footjob", "paizuri", "fellatio", "anal", "or*l", "groin", "crotch",
+    "explicit", "hentai", "nsfw", "r18", "r-18", "xxx", "lewd",
+    "topless", "bottomless", "undressing", "exposed breasts", "breasts out",
+    "bare ass", "ahegao", "orgasm", "masturbation", "fetish", "footjob",
+    "paizuri", "fellatio", "anal", "groin", "crotch", "see-through",
+    "transparent clothing", "bondage", "shibari",
 )
+# 注意：bikini / swimsuit / lingerie / underwear / panties / cleavage /
+# large breasts / midriff 等**不再**硬排除 —— 它们是服装与身体描写，不是色情。
+# 对少女角色的保护改在运行期（promptlib.scene_usable / 人设 negative）做。
 
 # 暴力/血腥：自拍说说用不上，也不该出现在机器人主页
 VIOLENCE = (
-    "gun", "pistol", "rifle", "blood", "bloody", "gore", "corpse", "dead body",
-    "knife", "stab", "wound", "torture", "severed", "decapitat", "behead",
-    "hanging", "suicide", "self-harm", "self harm", "guts", "impale",
-    "execution", "massacre", "weapon", "sword", "blade", "dagger",
+    "blood", "bloody", "gore", "corpse", "dead body", "stab", "wound",
+    "torture", "severed", "decapitat", "behead", "hanging", "suicide",
+    "self-harm", "self harm", "guts", "impale", "execution", "massacre",
+    "gun", "pistol", "rifle", "knife", "murder", "kill",
 )
-
-# 暗示性但不至露骨：鉴于矩阵里有 15 岁角色，一并排除
-SUGGESTIVE = (
-    "cleavage", "playboy bunny", "bunny girl", "garter", "cameltoe",
-    "nsfw", "seductive pose", "middle finger", "insult", "gesture",
-    "man behind", "boy behind", "two men", "1boy", "male focus",
-)
+# 注意：sword / blade / dagger / weapon 不再算暴力 —— 奇幻场景里拿着剑很正常。
 
 # 分类路径黑名单（法典里的分类名）
 CATEGORY_BLOCK = (
-    "色色", "r18", "R18", "nsfw", "NSFW", "情趣", "内衣",
-    "泳装", "比基尼", "裸", "恋物",
+    "色色", "r18", "R18", "nsfw", "NSFW", "情趣", "裸", "恋物", "色情",
 )
+# 泳装 / 内衣 / 比基尼 等分类不再整个挡掉（它们是正常服装）。
 
 # 画师串（编纂者精选画师组）单独收集：这是改画风最有效的手段，
 # NovelAI 里用 artist:xxx 的权重串直接把画风拉向特定插画师。
 ARTIST_CATEGORY_HINT = ("画师", "artist")
 # 只要 NAI5 时期的画师串：跨时期的串在 V5 模型上表现参差（NAI3 时代用 {} 语法、
 # NAI4.5 权重习惯也不同），统一用 NAI5 的稳定性最好。
-STYLE_ERA_ALLOW = ("NAI5",)
+STYLE_ERA_ALLOW = ("NAI5", "NAI4.5", "N4.5")
 
-MIN_TAGS_LEN = 12
+MIN_TAGS_LEN = 4
 MIN_TITLE_LEN = 2
 
 
@@ -121,13 +122,24 @@ def contains_nsfw(text: str) -> str | None:
     return None
 
 
+# 男性向 / 男性主体：命中即丢。用词边界，避免 female / woman 里的 male、man 误伤。
+MALE_RE = re.compile(
+    r"\b(?:1boy|2boys|3boys|4boys|multiple boys|many boys|male focus|solo male|"
+    r"man|men|boy|boys|male|father|uncle|brother|son|husband|futanari|futa|"
+    r"male on male|yaoi|bara)\b"
+)
+
+
 def unsafe_reason(text: str) -> str | None:
-    """返回命中的不安全词（含暴力/暗示），没命中返回 None。"""
+    """返回命中的不安全词（露骨 / 血腥 / 男性向），没命中返回 None。"""
     low = text.lower()
-    for group, words in (("nsfw", NSFW_HARD), ("violence", VIOLENCE), ("suggestive", SUGGESTIVE)):
+    for group, words in (("nsfw", NSFW_HARD), ("violence", VIOLENCE)):
         for word in words:
             if word in low:
                 return f"{group}:{word}"
+    hit = MALE_RE.search(low)
+    if hit:
+        return f"male:{hit.group(0)}"
     return None
 
 
@@ -186,7 +198,7 @@ def main() -> int:
     seen_tags: set[str] = set()
     seen_styles: set[str] = set()
     stats: dict[str, dict] = {}
-    dropped = {"nsfw": 0, "category": 0, "short": 0, "dup": 0, "bad": 0}
+    dropped = {"nsfw": 0, "male": 0, "category": 0, "short": 0, "dup": 0, "bad": 0}
 
     for codex_id, label in COLLECTIONS:
         url = f"{rel_url}/share/{codex_id}.json"
@@ -217,13 +229,15 @@ def main() -> int:
                 continue
             # 画师串单独收，不进场景池（它们是改画风的，不是画面内容）
             if any(h in category for h in ARTIST_CATEGORY_HINT):
-                if STYLE_ERA_ALLOW and not any(e in title.upper() for e in STYLE_ERA_ALLOW):
+                era_blob = (title + " " + category).upper()
+                if STYLE_ERA_ALLOW and not any(e.upper() in era_blob for e in STYLE_ERA_ALLOW):
                     dropped["style_era"] = dropped.get("style_era", 0) + 1
                     continue
-                if contains_nsfw(tags) or contains_nsfw(title):
-                    dropped["nsfw"] += 1
+                reason = unsafe_reason(tags) or unsafe_reason(title)
+                if reason:
+                    dropped["male" if reason.startswith("male:") else "nsfw"] += 1
                     continue
-                if len(tags) < 30:
+                if len(tags) < 8:
                     dropped["short"] += 1
                     continue
                 key = re.sub(r"\s+", " ", tags.lower())
@@ -238,7 +252,7 @@ def main() -> int:
                 continue
             reason = unsafe_reason(tags) or unsafe_reason(title)
             if reason:
-                dropped["nsfw"] += 1
+                dropped["male" if reason.startswith("male:") else "nsfw"] += 1
                 continue
             if len(tags) < MIN_TAGS_LEN:
                 dropped["short"] += 1
@@ -282,7 +296,7 @@ def main() -> int:
         print(f"  {info['label']:<22} {info['entries']:>6} → {info['kept']:>6}")
     print(f"  {'合计':<22} {'':>6}   {len(scenes):>6}")
     print()
-    print(f"  过滤：露骨 {dropped['nsfw']}  分类黑名单 {dropped['category']}  "
+    print(f"  过滤：露骨 {dropped['nsfw']}  男性向 {dropped['male']}  分类黑名单 {dropped['category']}  "
           f"过短 {dropped['short']}  重复 {dropped['dup']}  无效 {dropped['bad']}")
     print(f"  作者署名 {len(attribution)} 个")
     if dropped.get("style_era"):

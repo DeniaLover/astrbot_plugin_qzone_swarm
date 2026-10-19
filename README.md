@@ -304,7 +304,7 @@ AstrBot/data/plugin_data/astrbot_plugin_qzone_swarm/ref/
 ### 场景库（法典图鉴提炼，`scene_first`）
 
 让自拍不再总是"图书馆窗边"。从[法典图鉴](https://novelai.quicktagcloud.com/)提炼了
-**7395 条**人写好的场景/构图/服装提示词，带中文标题与例图分类。
+**13212 条**人写好的场景/构图/服装提示词，带中文标题与例图分类。
 
 **流程是「先定图、再写文」**：
 
@@ -331,7 +331,8 @@ AstrBot/data/plugin_data/astrbot_plugin_qzone_swarm/ref/
 要点：**柔和过渡 + 清晰线稿**（不是纯平涂赛璐璐）、**明亮通透带轮廓光**、
 **大眼高光**、**通透材质与氛围元素**（气泡/花瓣/光点）、粉蓝紫为主的柔和饱和。
 
-**画师串（改画风）**：从法典的「编纂者常用画师组」提炼，**只保留 NAI5 时期**的 3 组，
+**画师串（改画风）**：从法典的「编纂者常用画师组」提炼，**保留 NAI5 / NAI4.5 时期**的 8 组组合串
+（另有 382 组单画师词典条目，小概率参与），
 存在 `scenes.json` 的 `styles` 里。这是改画风最有效的手段 ——
 NovelAI 的 `artist:xxx` 权重串会把画风直接拉向特定插画师。
 
@@ -446,7 +447,7 @@ python tools/build_scene_library.py --dry-run  # 只统计不落盘
 | 达妮娅 | `petite, slender, young woman, soft youthful features` | 只用 `NAI5时期：2` |
 | 风堇 | `petite, youthful face, soft rounded features, gentle, slender` | 只用 `NAI5时期：2` |
 | 西格莉卡（15 岁） | `teenage girl, petite, youthful face, energetic, slim` | 只用 `NAI5时期：2`，负向更严 |
-| 莫宁 | `young adult woman, composed, slender` | 三组都可用（成年角色） |
+| 莫宁 | `young adult woman, composed, slender` | 全部可用（成年角色） |
 
 > 想给某个角色换画风，就改她的 `style_avoid`；
 > 想整体固定某组，把 `selfie.artist_style` 填成那组的标题。

@@ -1020,10 +1020,20 @@ def test_scene_library() -> None:
     check("场景库标注了排除的 R18 法典", "r18" in str(meta.keys()) or True)
 
     # 选题：多次抽样都要是「单人女性向」，且不含违禁词
+    # 2026-10 策略调整：场景库只排除「男性向 / 血腥 / 露骨」三类，
+    # 泳装、内衣、身体描写等正常服装已放开（改由运行期按人设过滤）。
     BAD = (
-        "1boy", "male focus", "furry", "mecha", "breasts", "middle finger",
-        "nude", "naked", "bikini", "swimsuit", "lingerie", "bondage",
-        "blood", "gore", "gun", "pistol", "suicide",
+        # 男性向
+        "1boy", "2boys", "male focus", "solo male", "man", "men", "boy", "boys",
+        "furry", "mecha",
+        # 血腥 / 暴力
+        "blood", "gore", "corpse", "gun", "pistol", "knife", "suicide",
+        "stab", "wound", "torture", "impale",
+        # 露骨
+        "nude", "naked", "nipple", "penis", "vagina", "hentai", "explicit",
+        "bondage", "ahegao", "orgasm",
+        # 不雅手势（库里有，运行期挡）
+        "middle finger",
     )
     # 用**词边界**匹配，别用子串：
     # 「breastplate 胸甲」不该被当成 breast，「gunblade」同理。
@@ -1172,7 +1182,18 @@ def test_scene_library() -> None:
     # 画师串只留 NAI5
     if lib.style_count():
         titles = [str(s.get("t")) for s in lib._styles]
-        check("★ 画师串只含 NAI5", all("NAI5" in x.upper() for x in titles), str(titles))
+        # 2026-10：画师串放开到 NAI5 + NAI4.5，另外并入了单画师词典（k="single"）
+        def _era_ok(s: dict) -> bool:
+            if str(s.get("k")) == "single":
+                return True
+            blob = str(s.get("t", "")).upper()
+            return any(e in blob for e in ("NAI5", "NAI4.5", "N4.5"))
+
+        check(
+            "★ 画师串时期合法（NAI5 / NAI4.5 / 单画师）",
+            all(_era_ok(s) for s in lib._styles),
+            str(titles[:8]),
+        )
 
     # ---- 按人设分流画师串 ----
     for pid in ("达妮娅", "风堇", "西格莉卡"):

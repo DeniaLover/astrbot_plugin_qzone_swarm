@@ -40,6 +40,8 @@ SCENE_BLOCK_TAGS = (
     "1boy", "male focus", "2boys", "multiple boys", "futanari",
     "furry", "anthro", "mecha", "robot", "monster", "kaiju",
     "orc", "goblin", "tentacle",
+    # 库里有、但不适合画在机器人主页上的：不雅手势 / 低俗动作
+    "middle finger", "insult", "gesture", "playboy bunny",
 )
 SCENE_PREFER_TAG = "1girl"
 
@@ -351,6 +353,15 @@ class PromptLibrary:
         if not pool:
             # 全被排掉时退回"只按 avoid_titles 过滤"，否则人物会完全没画风
             pool = [s for s in self._styles if str(s.get("t")) not in avoid] or list(self._styles)
+
+        # 组合画师串（编纂者精选的多人组，``k="bundle"``）比单画师稳得多，
+        # 优先用它；只有小概率抽单画师词典，给画风留一点意外性。
+        bundles = [s for s in pool if s.get("k") != "single"]
+        singles = [s for s in pool if s.get("k") == "single"]
+        if bundles and (not singles or random.random() < 0.85):
+            return random.choice(bundles)
+        if singles:
+            return random.choice(singles)
         return random.choice(pool)
 
     def find_artist_style(self, name: str) -> dict[str, Any] | None:
