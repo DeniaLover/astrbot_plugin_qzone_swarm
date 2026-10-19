@@ -64,6 +64,12 @@ HAIRSTYLES = (
 TIGHT_SHOT_MARKERS = ("close-up", "closeup", "close up", "headshot", "face focus")
 # 特写改用方图：NAI 在纵版画布上画 close-up 极易切成上下多格/重复画面
 # （实测 split screen / multiple views 等负向词压不住），换成方图后就正常了。
+# 实测会把**脸**画坏的画师串：额头出现异常亮带、眼睛塌陷。
+# 与「画得成熟」不同，这是结构崩坏，任何角色都不该用。
+STYLE_BLOCK_TITLES = frozenset({
+    "NAI4.5时期：2",
+})
+
 # 832x832 = 64 的倍数、约 69 万像素，稳稳在免费带内。
 TIGHT_SHOT_SIZE = "832x832"
 # 词边界匹配男性词：不能简单用子串，否则 "female" 里的 "male" 会被误判
@@ -344,7 +350,8 @@ class PromptLibrary:
         banned = [str(x).lower() for x in (cfg.get("style_avoid") or []) if str(x).strip()]
 
         def _ok(style: dict[str, Any]) -> bool:
-            if str(style.get("t")) in avoid:
+            title = str(style.get("t"))
+            if title in avoid or title in STYLE_BLOCK_TITLES:
                 return False
             blob = (str(style.get("t", "")) + " " + str(style.get("g", ""))).lower()
             return not any(b in blob for b in banned)
@@ -352,7 +359,10 @@ class PromptLibrary:
         pool = [s for s in self._styles if _ok(s)]
         if not pool:
             # 全被排掉时退回"只按 avoid_titles 过滤"，否则人物会完全没画风
-            pool = [s for s in self._styles if str(s.get("t")) not in avoid] or list(self._styles)
+            pool = [
+                s for s in self._styles
+                if str(s.get("t")) not in avoid and str(s.get("t")) not in STYLE_BLOCK_TITLES
+            ] or list(self._styles)
 
         # 组合画师串（编纂者精选的多人组，``k="bundle"``）比单画师稳得多，
         # 优先用它；只有小概率抽单画师词典，给画风留一点意外性。
