@@ -434,3 +434,18 @@ def daypart_text(ts: float | None = None) -> str:
 
 def within_days(days: int) -> float:
     return time.time() - timedelta(days=max(0, days)).total_seconds()
+
+
+_CJK_RE = re.compile(r"[\u4e00-\u9fff\u3400-\u4dbf]")
+
+
+def has_cjk(text: str) -> bool:
+    """文本里有没有汉字（判断提示词是否还没转写干净）。"""
+    return bool(_CJK_RE.search(str(text or "")))
+
+
+def strip_cjk(text: str) -> str:
+    """把残留的汉字片段去掉（兜底：宁可少一段场景，也别把中文喂给 NAI）。"""
+    parts = [p.strip() for p in re.split(r"[,\uff0c]", str(text or ""))]
+    kept = [p for p in parts if p and not _CJK_RE.search(p)]
+    return ", ".join(kept)

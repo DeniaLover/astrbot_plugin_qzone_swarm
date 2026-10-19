@@ -682,6 +682,12 @@
         "type": "bool",
         "default": true,
         "hint": "给「让模型想画面」这一步加上约束：必须有明确动作、与环境有物理互动、有动态视觉元素，避免原地站着摆拍。规则提炼自随包的 NAI_Prompt_Constraint_v2.md（模块 5），不改变外观/画风/镜头由提示词库统一控制的既有分工。"
+      },
+      "translate_scene": {
+        "description": "中文画面转写为 NAI 标签",
+        "type": "bool",
+        "default": true,
+        "hint": "模型「想画面」那一步输出的是中文叙述；NAI 只吃英文 Danbooru 标签，中文直接拼进去是无效的。开启后会用一次额外调用把中文转写成英文标签串（按随包 NAI_Prompt_Constraint_v2.md 的语法规范）。关闭则退回「剔除中文」的降级行为。"
       }
     }
   },

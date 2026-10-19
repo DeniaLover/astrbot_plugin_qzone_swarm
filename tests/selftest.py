@@ -1091,6 +1091,41 @@ def test_scene_library() -> None:
     check("约束块提到动作/互动/动态", all(
         k in SCENE_DYNAMICS_BLOCK for k in ("动作", "互动", "动态")))
     check("约束开启后提示词更长", len(_u_on) > len(_u_off) + 100)
+
+    # ---- 中文画面 → NAI 标签串的转写（NAI_Prompt_Constraint_v2 语法）----
+    from qzone_swarm.compose import build_scene_translate_prompt
+    from qzone_swarm.util import has_cjk, strip_cjk
+
+    _sys_t, _usr_t = build_scene_translate_prompt("在药草铺里喝奶茶")
+    check("转写提示词要求全英文小写", "英文小写" in _sys_t or "lowercase" in _sys_t.lower())
+    check("转写提示词禁止写外观", "不要写" in _sys_t and "发色" in _sys_t)
+    check("转写提示词禁止写镜头", "镜头" in _sys_t)
+    check("转写用户消息含中文原文", "在药草铺里喝奶茶" in _usr_t)
+
+    check("has_cjk 识别中文", has_cjk("1girl, 在药草铺里") is True)
+    check("has_cjk 放行纯英文", has_cjk("1girl, holding a cup, petals") is False)
+    check("strip_cjk 去掉中文保留英文",
+          strip_cjk("1girl, 在药草铺里, holding a cup, 花瓣飘落, smile")
+          == "1girl, holding a cup, smile")
+
+    # 截断尾片段清理
+    from qzone_swarm.runtime import BotRuntime as _BR
+    check("截断尾片段被丢掉",
+          _BR._trim_partial_tag("library, rain on glass, water drops, 1")
+          == "library, rain on glass, water drops")
+    check("正常串不被改动",
+          _BR._trim_partial_tag("1girl, holding teacup, petals")
+          == "1girl, holding teacup, petals")
+
+    # 端到端：中文场景拼进提示词必须没有中文
+    _zh_scene = "在午后阳光洒进来的药草铺廊下，我端着一杯温热的奶茶"
+    _raw_prompt = lib.build(persona_id="风堇", scene=_zh_scene, daypart="下午",
+                            use_lora=False, use_trigger=True)
+    check("★ 未转写的中文会混进提示词（确认缺陷存在）", has_cjk(_raw_prompt))
+    _en_scene = "veranda, apothecary, holding teacup, petals, dust motes"
+    _ok_prompt = lib.build(persona_id="风堇", scene=_en_scene, daypart="下午",
+                           use_lora=False, use_trigger=True)
+    check("★ 转写后提示词无中文", not has_cjk(_ok_prompt))
     prev = ""
     repeats = 0
     for _ in range(30):

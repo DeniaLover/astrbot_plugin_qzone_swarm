@@ -304,6 +304,53 @@ class BotRuntime:
         except Exception as exc:
             self.log.debug("记录场景使用失败：%s", exc)
 
+    async def _transcribe_scene(self, chinese_scene: str) -> str:
+        """把中文画面描述转写成 NAI 英文 Danbooru 标签串。
+
+        规范见 ``qzone_swarm/NAI_Prompt_Constraint_v2.md``。
+        转写失败就退回去掉中文的原串 —— 宁可少一段场景，也别把中文喂给 NAI。
+        """
+        from .compose import build_scene_translate_prompt
+        from .util import has_cjk, strip_cjk
+
+        if not has_cjk(chinese_scene):
+            return chinese_scene.strip()
+        system, user = build_scene_translate_prompt(chinese_scene)
+        try:
+            raw = await self.bridge.generate(
+                self.profile,
+                system_prompt=system,
+                user_prompt=user,
+                purpose="转写提示词",
+            )
+        except Exception as exc:
+            self.log.warning("提示词转写失败，退回原串去中文：%s", exc)
+            return strip_cjk(chinese_scene)
+        text = clean_text(raw, max_len=700).strip().strip("`").strip()
+        # 去掉可能被包上的 ``` 或前缀
+        if text.lower().startswith("tags:"):
+            text = text[5:].strip()
+        if not text:
+            return strip_cjk(chinese_scene)
+        if has_cjk(text):
+            cleaned = strip_cjk(text)
+            self.log.warning("转写结果仍含中文，已剔除：%r", text[:80])
+            return cleaned or strip_cjk(chinese_scene)
+        text = self._trim_partial_tag(text)
+        self.log.info("画面已转写为 NAI 标签：%s", text[:90])
+        return text
+
+    @staticmethod
+    def _trim_partial_tag(text: str) -> str:
+        """reasoning 模型偶尔把最后半个 tag 截断（如 "... rain on glass, 1"）。
+
+        把末尾明显不完整的碎片丢掉 —— 少一个 tag 无所谓，半个 tag 会污染画面。
+        """
+        parts = [p.strip() for p in str(text or "").split(",")]
+        while parts and (not parts[-1] or len(parts[-1]) < 2):
+            parts.pop()
+        return ", ".join(parts)
+
     async def _check_anatomy(
         self, image: bytes, mime: str, attempt: int, retries: int
     ) -> bool | None:
@@ -445,6 +492,10 @@ class BotRuntime:
                     ),
                     max_len=600,
                 )
+                # 模型给的是**中文叙述**。NAI 只吃英文 Danbooru 标签，
+                # 中文直接拼进去是无效的 —— 所以先按 NAI 规范转写成标签串。
+                if scene and getattr(self.config.selfie, "translate_scene", True):
+                    scene = await self._transcribe_scene(scene)
             if not scene:
                 draft["selfie_error"] = "模型没有给出画面描述"
                 return

@@ -117,6 +117,8 @@ class SelfieConfig:
     variation: float = 0.85
     # 「不许连续重复」的窗口：最近几张用过的不再抽（构图/画师串/服装/发型都适用）
     no_repeat_window: int = 2
+    # 把模型给的中文画面转写成 NAI 英文标签串（不转写会把中文直接喂给 NAI）
+    translate_scene: bool = True
     # 给「想画面」这一步加上画面张力约束（源自 NAI_Prompt_Constraint_v2.md）
     use_prompt_constraint: bool = True
     # 出图后让视觉模型复检人体结构，不合格就重画。

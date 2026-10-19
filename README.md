@@ -427,6 +427,32 @@ python tools/build_scene_library.py --dry-run  # 只统计不落盘
    本地中转返回空内容或乱码。所以默认关掉，避免白等一轮。
    等你配了可用的视觉模型再打开即可。
 
+### 中文画面 → NAI 标签的转写（重要）
+
+**真实缺陷**：模型「想画面」那一步输出的是**中文叙述**。如果直接拼进提示词，
+最终会变成这样 —— NAI 根本读不懂中文，这段等于浪费：
+
+```
+hyacine (honkai: star rail), 1girl, solo, pink hair..., black shoes,
+在午后阳光洒进来的药草铺廊下，我端着一杯温热的奶茶，小伊卡趴在花盆边上打盹..., three-quarter view
+```
+
+所以中间必须有一道**转写**：按 `NAI_Prompt_Constraint_v2.md` 的语法规范，
+把中文画面转成英文 Danbooru 标签串，只写「画面内容」这一层：
+
+```
+veranda, apothecary, hanging herbs, potted plant, afternoon, sunbeams,
+sitting on veranda, holding teacup, sleeping, leaning against flowerpot,
+wind blowing, petals on shoulder, steam from cup, floating petals, dust motes
+```
+
+配置项 `selfie.translate_scene`（默认开）。关闭则退回降级行为：
+**剔除中文片段**（宁可少一段场景，也不把中文喂给 NAI）。
+
+> 转写用的是 reasoning 模型，偶尔会把最后一个 tag 截断成 `..., 1` 这种。
+> 插件会自动丢掉末尾不完整的碎片（`_trim_partial_tag`）—— 少一个 tag 无所谓，
+> 半个 tag 会污染画面。
+
 ### 提示词约束（NAI_Prompt_Constraint_v2）
 
 仓库里随包带了一份 **NAI 提示词架构规范**：`qzone_swarm/NAI_Prompt_Constraint_v2.md`
