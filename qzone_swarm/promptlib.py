@@ -72,6 +72,19 @@ STYLE_BLOCK_TITLES = frozenset({
 
 # 832x832 = 64 的倍数、约 69 万像素，稳稳在免费带内。
 TIGHT_SHOT_SIZE = "832x832"
+
+# 镜头类型分类：用于「每张说说构图必须换」。
+# 判定顺序 tight → medium → full，命中即返回；都不命中返回 ""（未知）。
+SHOT_CLASS_MARKERS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    # tight 只认真正的特写；``portrait`` 不算 —— 否则 "upper body portrait"
+    # 会被判成特写，构图轮换就乱了。
+    ("tight", ("close-up", "closeup", "close up", "headshot", "face focus")),
+    ("medium", ("medium shot", "upper body", "cowboy shot", "half body", "bust",
+                "three-quarter view", "three quarter view")),
+    ("full", ("full body", "wide shot", "full-length", "full length",
+              "from below", "from above", "from a low angle", "from a high angle",
+              "low angle", "high angle", "sitting")),
+)
 # 词边界匹配男性词：不能简单用子串，否则 "female" 里的 "male" 会被误判
 _MALE_RE = re.compile(r"\b(?:man|men|boy|boys|male)\b")
 
@@ -285,11 +298,13 @@ class PromptLibrary:
         avoid_ids: set[str] | None = None,
         min_len: int = 60,
         collections: list[str] | None = None,
+        avoid_shot_class: str = "",
     ) -> dict[str, Any] | None:
         """挑一条场景。
 
         * ``avoid_ids``：最近用过的 id，避开以免重复（用尽了就允许重复）
         * ``min_len``：太短的条目（单个服装词）撑不起一条说说，尽量不用
+        * ``avoid_shot_class``：上一张用的镜头类型；尽量避开，保证构图有变化
         * ``collections``：只从这些法典里挑
         * 权重按标签长度加权 —— 内容越丰富越容易被选中
 
@@ -318,6 +333,17 @@ class PromptLibrary:
         single_girl = [s for s in pool if SCENE_PREFER_TAG in str(s.get("g") or "").lower()]
         if single_girl:
             pool = single_girl
+
+        # 构图必须换：优先挑与上一张**不同镜头类型**的场景
+        if avoid_shot_class:
+            different = [
+                s for s in pool
+                if self.classify_shot(str(s.get("g") or "")) != avoid_shot_class
+            ]
+            # 只有库里有镜头的条目本来就少（约 11%），筛完太小就放弃这层限制，
+            # 否则会一直困在那几百条里。
+            if len(different) >= max(200, len(pool) // 10):
+                pool = different
 
         # 先只要够长的；都不够长再放宽
         rich = [s for s in pool if len(str(s.get("g") or "")) >= min_len]
@@ -388,6 +414,32 @@ class PromptLibrary:
         return None
 
     # -- 构图与画布 ---------------------------------------------------------- #
+    @staticmethod
+    def classify_shot(text: str) -> str:
+        """把一段提示词归到 tight / medium / full，认不出返回 ""。"""
+        low = str(text or "").lower()
+        for name, markers in SHOT_CLASS_MARKERS:
+            if any(m in low for m in markers):
+                return name
+        return ""
+
+    def pick_composition(
+        self, *, avoid: set[str] | None = None, avoid_shot_class: str = ""
+    ) -> str:
+        """挑一条构图词，**避开最近用过的**，并尽量换镜头类型（强制每张不一样）。"""
+        options = self.composition()
+        if not options:
+            return ""
+        used = avoid or set()
+        pool = [c for c in options if c not in used]
+        if not pool:                      # 池子被抽干了才允许重复
+            pool = list(options)
+        if avoid_shot_class:
+            different = [c for c in pool if self.classify_shot(c) != avoid_shot_class]
+            if different:                 # 大小景别交替，画面差异更明显
+                pool = different
+        return random.choice(pool)
+
     @staticmethod
     def is_tight_shot(scene_tags: str) -> bool:
         low = str(scene_tags or "").lower()

@@ -113,8 +113,10 @@ class SelfieConfig:
     scene_first: bool = True
     # 画师串（改画风）：off=不注入 / random=每次随机一组 / 填标题=固定用那一组
     artist_style: str = "random"
-    # 换装/换发型概率（0 = 永远用设定里的原装）
-    variation: float = 0.35
+    # 换装/换发型概率（0 = 永远用设定里的原装，1 = 每张都换）
+    variation: float = 0.85
+    # 「不许连续重复」的窗口：最近几张用过的不再抽（构图/画师串/服装/发型都适用）
+    no_repeat_window: int = 2
     # 出图后让视觉模型复检人体结构，不合格就重画。
     # ⚠️ 需要有**支持图像输入的**模型；本机现有 key（方舟套餐 / 中转）都不支持，
     #    所以默认关闭。没有视觉能力时打开只会白等一轮。

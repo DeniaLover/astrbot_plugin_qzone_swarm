@@ -344,9 +344,62 @@ class BotRuntime:
         except Exception:
             pass
 
+    # -- 「每张必须有变化」的记忆 ------------------------------------------ #
+    def _window(self) -> int:
+        """最近多少条不许重复（默认 2：不和上一条、上上条撞）。"""
+        try:
+            return max(1, int(getattr(self.config.selfie, "no_repeat_window", 2) or 2))
+        except (TypeError, ValueError):
+            return 2
+
+    def _recent(self, key: str) -> set[str]:
+        return {str(x) for x in (self.store.data.get(key) or [])[-self._window():]}
+
+    def _remember(self, key: str, value: str, cap: int = 40) -> None:
+        value = str(value or "").strip()
+        if not value:
+            return
+        items = list(self.store.data.get(key) or [])
+        items.append(value)
+        self.store.data[key] = items[-cap:]
+        try:
+            self.store.save()
+        except Exception as exc:
+            self.log.debug("记录 %s 失败：%s", key, exc)
+
+    def _recent_compositions(self) -> set[str]:
+        return self._recent("compositions_used")
+
+    def _remember_composition(self, text: str) -> None:
+        self._remember("compositions_used", text)
+
+    def _last_shot_class(self) -> str:
+        used = self.store.data.get("shot_class_used") or []
+        return str(used[-1]) if used else ""
+
+    def _remember_shot_class(self, name: str) -> None:
+        if name:
+            self._remember("shot_class_used", name, cap=20)
+
+    def _recent_outfit_ids(self) -> set[str]:
+        return self._recent("outfits_used")
+
+    def _remember_outfit(self, scene: dict[str, Any] | None) -> None:
+        if scene and scene.get("i"):
+            self._remember("outfits_used", str(scene["i"]), cap=40)
+
+    def _recent_hairs(self) -> set[str]:
+        return self._recent("hairs_used")
+
+    def _remember_hair(self, text: str) -> None:
+        self._remember("hairs_used", text)
+
     def _pick_scene(self) -> dict[str, Any] | None:
         """挑场景；连续多次撞库就放宽限制。"""
-        scene = self._prompt_lib.pick_scene(avoid_ids=self._recent_scene_ids())
+        scene = self._prompt_lib.pick_scene(
+            avoid_ids=self._recent_scene_ids(),
+            avoid_shot_class=self._last_shot_class(),   # 构图必须换
+        )
         if scene is not None:
             self._remember_scene(scene)
         return scene
@@ -420,24 +473,51 @@ class BotRuntime:
             # 换装 / 换发型：让角色别永远一套衣服（identity 段永远保留，
             # 所以发色瞳色不会变，认得出还是她）
             try:
-                variation = float(getattr(self.config.selfie, "variation", 0.35) or 0.0)
+                variation = float(getattr(self.config.selfie, "variation", 0.85) or 0.0)
             except (TypeError, ValueError):
                 variation = 0.0
             outfit_override = ""
             hair_override = ""
-            if variation > 0 and random.random() < variation:
-                if random.random() < 0.65:
-                    outfit_scene = self._prompt_lib.pick_outfit(
-                        avoid_ids=self._recent_scene_ids()
-                    )
+            if variation > 0:
+                # 服装：概率 = variation，且避开最近几条穿过的（不连续重复）
+                if random.random() < variation:
+                    avoid_outfits = self._recent_outfit_ids() | self._recent_scene_ids()
+                    outfit_scene = self._prompt_lib.pick_outfit(avoid_ids=avoid_outfits)
                     if outfit_scene is not None:
                         outfit_override = self._prompt_lib.scene_tags(outfit_scene)
+                        self._remember_outfit(outfit_scene)
                         self.log.info(
                             "换装：《%s》", self._prompt_lib.scene_title(outfit_scene)
                         )
-                if random.random() < 0.55:
-                    hair_override = self._prompt_lib.pick_hairstyle()
-                    self.log.info("换发型：%s", hair_override)
+                # 发型：同上，同样避开最近几条
+                if random.random() < variation:
+                    hair_override = self._prompt_lib.pick_hairstyle(
+                        avoid=self._recent_hairs()
+                    )
+                    if hair_override:
+                        self._remember_hair(hair_override)
+                        self.log.info("换发型：%s", hair_override)
+
+            # 构图：强制每张不一样。
+            # 场景库里只有约 11% 的条目自带镜头说明，其余不写 ——
+            # 所以「场景没写镜头」时主动注入构图池里的一条，保证画面构图真有变化；
+            # 场景已经写了镜头时不叠（叠了会打架，实测把特写画成蹲姿）。
+            scene_shot = self._prompt_lib.classify_shot(scene)
+            composition_text = ""
+            if chosen_scene is None or not scene_shot:
+                composition_text = self._prompt_lib.pick_composition(
+                    avoid=self._recent_compositions(),
+                    avoid_shot_class=self._last_shot_class(),
+                )
+                if composition_text:
+                    self._remember_composition(composition_text)
+                    self.log.info("构图：%s", composition_text)
+
+            # 记下这张的镜头类型，下一张优先挑别的类型
+            self._remember_shot_class(
+                self._prompt_lib.classify_shot(scene)
+                or self._prompt_lib.classify_shot(composition_text)
+            )
 
             use_lora = bool(getattr(self.config.selfie, "lora_enabled", True))
             use_trigger = bool(getattr(self.config.selfie, "use_trigger", True))
@@ -454,7 +534,8 @@ class BotRuntime:
                 use_lora=use_lora,
                 use_trigger=use_trigger,
                 # 场景库条目自带镜头说明，别再叠随机构图词
-                include_composition=(chosen_scene is None),
+                include_composition=bool(composition_text),
+                composition=composition_text,
                 artist_style=artist_text,
                 outfit_override=outfit_override,
                 hair_override=hair_override,

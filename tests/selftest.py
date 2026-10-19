@@ -1069,6 +1069,36 @@ def test_scene_library() -> None:
     others = [lib.pick_scene(avoid_ids=avoid) for _ in range(20)]
     check("avoid_ids 生效", all(str(o.get("i")) not in avoid for o in others))
 
+    # ---- 每张必须换构图 ----
+    check("镜头分类：特写", lib.classify_shot("1girl, close-up on face") == "tight")
+    check("镜头分类：中景", lib.classify_shot("1girl, medium shot, eye-level") == "medium")
+    check("镜头分类：全身", lib.classify_shot("1girl, full body, standing") == "full")
+    check("镜头分类：认不出返回空", lib.classify_shot("1girl, holding a cup") == "")
+
+    _random.seed(20261019)
+    comp_positions = lib.composition()
+    check("构图池非空", len(comp_positions) >= 4, str(len(comp_positions)))
+    prev = ""
+    repeats = 0
+    for _ in range(30):
+        cur = lib.pick_composition(avoid={prev} if prev else set())
+        if cur == prev:
+            repeats += 1
+        prev = cur
+    check("★ 构图轮换：30 次零连续重复", repeats == 0, f"连续重复 {repeats} 次")
+
+    # 场景也要换镜头类型
+    prev_cls = ""
+    same_cls = 0
+    for _ in range(30):
+        sc = lib.pick_scene(avoid_shot_class=prev_cls)
+        cls = lib.classify_shot(str(sc.get("g") or ""))
+        if cls and cls == prev_cls:
+            same_cls += 1
+        if cls:
+            prev_cls = cls
+    check("★ 选题换镜头类型", same_cls == 0, f"同类型连续 {same_cls} 次")
+
     # 场景插入必须**原样保留**（不能被逗号拆分破坏 :: 权重语法）
     scene = {"i": "t1", "t": "测试场景", "c": "测试",
              "g": "sitting in a boat, 1.3::medium shot, eye-level::, smiling"}
@@ -1227,8 +1257,13 @@ def test_scene_library() -> None:
     check("无 persona 时不合并", lib.resolved_negative() == lib.negative())
 
     # variation 配置
-    check("variation 默认 0.35", abs(_parse({}).selfie.variation - 0.35) < 1e-6,
+    check("variation 默认 0.85（尽量每张都换）",
+          abs(_parse({}).selfie.variation - 0.85) < 1e-6,
           str(_parse({}).selfie.variation))
+    check("no_repeat_window 默认 2", _parse({}).selfie.no_repeat_window == 2,
+          str(_parse({}).selfie.no_repeat_window))
+    check("no_repeat_window 最小为 1",
+          _parse({"selfie": {"no_repeat_window": 0}}).selfie.no_repeat_window == 1)
     check("variation 可设 0", _parse({"selfie": {"variation": 0}}).selfie.variation == 0.0)
     check("variation 被钳制在 0~1", _parse({"selfie": {"variation": 5}}).selfie.variation == 1.0,
           str(_parse({"selfie": {"variation": 5}}).selfie.variation))
