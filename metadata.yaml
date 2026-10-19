@@ -1,10 +1,32 @@
 name: astrbot_plugin_qzone_swarm
-version: 0.2.0
-author: QQ Agent
-desc: QQ空间多号矩阵。多个机器人各自独立地定时发说说、评论、回复、点赞；说说素材取自各自指定群聊/私聊的聊天记录，没有素材时按人设的行动轨迹生成；评论与回复同样符合人设。每号独立 Cookie、独立上下文、独立时间表，互不顶号。支持自拍配图（NovelAI / 豆包 Seedream / 自建 SD，多端点自动回退）、场景库选题、按人设分流画师串与换装换发型。
 display_name: QQ空间多号矩阵
-repo: "https://github.com/DeniaLover/astrbot_plugin_qzone_swarm"
+short_desc: 多个机器人各自独立运营 QQ 空间：定时发说说、评论、回复、点赞，支持自拍配图
+desc: |-
+  QQ空间多号矩阵。多个机器人各自独立地定时发说说、评论、回复、点赞。
+
+  - **多号互不干扰**：每号独立 Cookie、独立 LLM 上下文、独立时间表，确定性错峰不撞车
+  - **素材驱动**：说说素材取自各自指定的群聊/私聊聊天记录；没有素材时按人设行动轨迹生成
+  - **人设一致**：说说、评论、回复全部按人设口吻生成
+  - **自拍配图**：支持 NovelAI / 豆包 Seedream / 自建 SD，多端点自动回退
+  - **画风可控**：场景库选题、画师串按人设分流、可换装换发型
+  - **安全默认**：默认演练模式，确认无误前不会真的发出去
+
+  需要配合支持 `aiocqhttp` 的协议端（如 SnowLuma / NapCat / Lagrange）使用。
+version: 0.2.0
+author: DeniaLover
+repo: https://github.com/DeniaLover/astrbot_plugin_qzone_swarm
 entry: main.py
+social_link: https://github.com/DeniaLover
 support_platforms:
   - aiocqhttp
 astrbot_version: ">=4.16,<5"
+tags:
+  - QQ空间
+  - 说说
+  - 多账号
+  - 定时任务
+  - 自动互动
+  - 自拍
+  - 绘图
+  - NovelAI
+  - aiocqhttp
