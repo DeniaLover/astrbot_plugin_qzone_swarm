@@ -1,8 +1,23 @@
-# QQ空间多号矩阵（astrbot_plugin_qzone_swarm）
+# QQ空间多号矩阵 · astrbot_plugin_qzone_swarm
 
-让**多个 QQ 号在同一套 AstrBot 里各自独立地**运营自己的 QQ 空间：
-各自定时发说说、评论、回复、点赞；各自读各自指定群聊/私聊的聊天记录当素材；
-各自用自己的模型与人设；互不顶号、互不串上下文。
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![AstrBot](https://img.shields.io/badge/AstrBot-%E2%89%A54.16-6f5cf2)](https://github.com/AstrBotDevs/AstrBot)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)](https://www.python.org/)
+[![Platform](https://img.shields.io/badge/platform-aiocqhttp-00A98F)](metadata.yaml)
+
+> 让**多个 QQ 号在同一套 AstrBot 里各自独立地**运营自己的 QQ 空间 ——
+> 各自定时发说说、评论、回复、点赞，各自用自己的素材、模型与人设，**互不顶号、互不串上下文**。
+
+**核心特性**
+
+| | |
+| --- | --- |
+| 🧩 **多号矩阵** | 每号独立 Cookie / 独立 LLM 上下文 / 独立时间表，确定性错峰不撞车 |
+| ✍️ **素材驱动** | 从各自指定的群聊/私聊抓聊天记录当素材；没素材时按人设行动轨迹生成 |
+| 🎭 **人设一致** | 说说、评论、回复全部按人设口吻生成，跨号不串味 |
+| 🖼️ **自拍配图** | NovelAI / 豆包 Seedream / 自建 SD，**多端点自动回退**，一张 6–11 秒 |
+| 🎨 **画风可控** | 场景库选题、画师串按人设分流、可换装换发型 |
+| 🛡️ **安全默认** | 默认演练模式，`dry_run_all` 关掉之前不会真的发 |
 
 > 这是一个**全新独立**插件，与已有的 `astrbot_plugin_qzone_ultra` 没有任何代码或配置上的耦合，
 > 也不会读写它的任何文件。两者可以同时安装。

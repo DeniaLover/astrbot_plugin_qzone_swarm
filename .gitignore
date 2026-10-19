@@ -6,7 +6,6 @@ __pycache__/
 .mypy_cache/
 
 # 本地生成 / 不该入库的
-qzone_swarm/scenes.json
 qzone_swarm/prompts_local.json
 dist/
 *.zip
