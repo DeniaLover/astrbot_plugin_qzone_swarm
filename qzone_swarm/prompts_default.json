@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "说明": "生图提示词库。画风目标：半厚涂日系插画 —— 柔和过渡配清晰线稿、明亮通透的光、精致大眼高光、通透材质与氛围元素。人设外观拆成 identity（不变）/ hair（可换）/ outfit（可换）三段。可以自由增删条目；改完重载插件生效。 另：每个角色带 body（体型/年龄感）与 style_avoid（画师串避用词），按人设挑画风。",
+  "quality": "very aesthetic, absurdres, masterpiece, best quality, highly detailed",
+  "negative": "lowres, bad anatomy, bad hands, extra fingers, missing fingers, fused fingers, watermark, text, signature, username, jpeg artifacts, blurry, worst quality, low quality, deformed, mutated, disfigured, extra limbs, bad proportions, photorealistic, realistic photo, 3d render, plastic skin, nsfw, nude, upskirt, pantyshot, crotch focus, spread legs, squatting, from below, split screen, multiple views, two frames, comic, collage, duplicate, letterbox, border, flat shading, dull colors, muddy colors, sketch, rough lines, harsh shadows, oversaturated, extra legs, three legs, multiple legs, fused legs, malformed limbs, disconnected limbs, missing limbs, extra arms, three arms, anatomical errors, wrong anatomy, extra feet, extra hands",
+  "style": [
+    "soft painterly anime illustration, luminous soft shading, clean delicate lineart, high-key bright lighting, gentle rim light, glossy highlights, detailed sparkling eyes, delicate pastel palette with vivid accents, translucent light effects, atmospheric glow, dreamy ambience, polished finish"
+  ],
+  "composition": [
+    "full body, standing, looking at viewer",
+    "medium shot, casual pose, looking at viewer",
+    "upper body portrait, looking at viewer",
+    "sitting, relaxed pose, looking at viewer",
+    "from a low angle, dynamic pose",
+    "half body, natural posture, looking at viewer",
+    "three-quarter view, turning to look at viewer"
+  ],
+  "lighting": {
+    "早晨": "soft morning sunlight, warm gentle tones",
+    "上午": "bright daylight, clear and airy",
+    "中午": "harsh midday sun, strong shadows",
+    "下午": "afternoon sunlight, warm golden rim light",
+    "晚上": "warm indoor lighting, cozy atmosphere",
+    "深夜": "dim night, cool blue tones, soft bokeh lights"
+  },
+  "persona": {
+    "达妮娅": {
+      "lora": "wuthering_waves_denia_il",
+      "lora_weight": 0.8,
+      "trigger": "denia\\(wuthering waves\\)",
+      "appearance": "1girl, solo, very long pale pink hair, lavender pink hair, blue inner hair, purplish blue eyes, droopy eyes, gentle smile, ahoge, wispy bangs, spiral side locks, huge wavy curled ends, black lace headband, blue gem hair ornaments, off shoulder, white dress with black straps and chains, pink puff sleeves, white fur trim, red gloves, black underskirt with gold pattern, blue starry overskirt cape, pale pink tassels, blue teardrop gems, small black plush doll at waist, black shoes with black bows",
+      "note": "有专用 LoRA；触发词必须带上，否则出不来角色。外观词已按官方立绘校对（发色是很浅的粉/淡紫，不是艳粉）",
+      "identity": "1girl, solo, very long pale pink hair, lavender pink hair, blue inner hair, purplish blue eyes, droopy eyes, gentle smile",
+      "hair": "ahoge, wispy bangs, spiral side locks, huge wavy curled ends, black lace headband, blue gem hair ornaments",
+      "outfit": "off shoulder, white dress with black straps and chains, pink puff sleeves, white fur trim, red gloves, black underskirt with gold pattern, blue starry overskirt cape, pale pink tassels, blue teardrop gems, small black plush doll at waist, black shoes with black bows",
+      "body": "petite, slender, young woman, soft youthful features",
+      "style_avoid": [
+        "sos adult",
+        "sos (adult)",
+        "adult"
+      ],
+      "negative_extra": "mature female, adult woman, voluptuous, tall"
+    },
+    "风堇": {
+      "lora": "honkai_star_rail_hyacine_il",
+      "lora_weight": 0.85,
+      "trigger": "hyacine (honkai: star rail)",
+      "appearance": "1girl, solo, pink hair with mint green gradient tips, multicolored hair, teal green eyes, fluffy twin tails, two side ponytails, long hair, spiral ahoge, small round hat, wine red headwear, white feather ornament on hat, long sleeves, white high collar shirt, cyan ribbon bow at neck, wine red dress with gold embroidery, white ruffled petticoat hem, white pantyhose, wine red ribbon bows at ankles, black shoes, small white creature plush at waist",
+      "note": "有专用 LoRA；仓库里还有 hyacine_il_pony_sd15 版本，低配可用它。外观词已按官方立绘校对（双马尾末端是青绿渐变）",
+      "identity": "1girl, solo, pink hair with mint green gradient tips, multicolored hair, teal green eyes",
+      "hair": "fluffy twin tails, two side ponytails, long hair, spiral ahoge, small round hat, wine red headwear, white feather ornament on hat",
+      "outfit": "long sleeves, white high collar shirt, cyan ribbon bow at neck, wine red dress with gold embroidery, white ruffled petticoat hem, white pantyhose, wine red ribbon bows at ankles, black shoes, small white creature plush at waist",
+      "body": "petite, youthful face, soft rounded features, gentle, slender",
+      "style_avoid": [
+        "sos adult",
+        "sos (adult)",
+        "adult"
+      ],
+      "negative_extra": "mature female, adult woman, voluptuous, tall, mature face"
+    },
+    "西格莉卡": {
+      "lora": "",
+      "lora_weight": 0.0,
+      "trigger": "sigrika \\(wuthering waves\\)",
+      "recommended_lora": "wuthering_waves_sigrika_il",
+      "recommended_trigger": "sigrika \\(wuthering waves\\)",
+      "recommended_weight": 0.8,
+      "recommended_base": "Illustrious",
+      "download": "https://civitai.com/models/2428772",
+      "appearance": "1girl, solo, very long orange hair, purple green gradient eyes, pointy ears, red glowing tacet mark on left thigh, cheerful energetic expression, center parted bangs, multiple braids, twin braids with gold bead rings, purple hair ribbons, white headscarf with white feather wings, gold triangle earrings, off shoulder outfit, bare midriff, purple and white layered top with gold trim, dark navy hot pants, thigh ring with hanging beads, white detached sleeves, mismatched fingerless gloves, purple white gradient cape with tassels, black gladiator sandals with gold trim",
+      "note": "本地还没有这个 LoRA。已选定二次元向的 Illustrious 版（Civitai 2428772，20.6MB）。下载后把文件改名成 wuthering_waves_sigrika_il.safetensors 放进 models/Lora，再把上面的 recommended_lora/recommended_trigger 填进 lora/trigger 即可。外观词已按官方立绘校对（白羽头巾、发辫金珠、左腿声痕）。角色 15 岁，画面必须健康、衣着完整",
+      "use_trigger_note": "NAI 自带角色知识库，写角色名即可出对角色（实测有效）",
+      "identity": "1girl, solo, very long orange hair, purple green gradient eyes, pointy ears, red glowing tacet mark on left thigh, cheerful energetic expression",
+      "hair": "center parted bangs, multiple braids, twin braids with gold bead rings, purple hair ribbons, white headscarf with white feather wings",
+      "outfit": "gold triangle earrings, off shoulder outfit, bare midriff, purple and white layered top with gold trim, dark navy hot pants, thigh ring with hanging beads, white detached sleeves, mismatched fingerless gloves, purple white gradient cape with tassels, black gladiator sandals with gold trim",
+      "body": "teenage girl, petite, youthful face, energetic, slim",
+      "style_avoid": [
+        "sos adult",
+        "sos (adult)",
+        "adult"
+      ],
+      "negative_extra": "mature female, adult woman, voluptuous, large breasts, cleavage, tall, mature face, suggestive"
+    },
+    "莫宁": {
+      "lora": "",
+      "lora_weight": 0.0,
+      "trigger": "mornye \\(wuthering waves\\)",
+      "recommended_lora": "wuthering_waves_mornye_il",
+      "recommended_trigger": "mornye \\(wuthering waves\\)",
+      "recommended_weight": 0.8,
+      "recommended_base": "Illustrious",
+      "download": "https://civitai.com/models/2199574",
+      "appearance": "1girl, solo, very long silver white hair with light blue purple gradient tips, pale skin, red eyes, calm expression, silver metallic prosthetic legs with blue crystal parts, thick straight bangs, hair over one eye, two triangle silver hairpins, floating geometric star orbit halo above head, white researcher lab coat, dark high collar with black bow, gold ring ornament at collar, purple blue gradient scarf with star pattern, purple blue starry see through legwear, white high heels, gold triangle earrings, gold bracelet, floating cyan holographic data screen",
+      "note": "本地还没有这个 LoRA。已选定二次元向的 Illustrious 版（Civitai 2199574 Ansl Ai v1.1，40.9MB）。下载后改名 wuthering_waves_mornye_il.safetensors 放进 models/Lora，再填 lora/trigger。外观词已按官方立绘校对（刘海遮一眼、金色环形领饰、机械义肢）。LoRA 权重建议 0.75-0.8，太高会把机械义肢画丢",
+      "use_trigger_note": "NAI 自带角色知识库，写角色名即可出对角色（实测有效）",
+      "identity": "1girl, solo, very long silver white hair with light blue purple gradient tips, pale skin, red eyes, calm expression, silver metallic prosthetic legs with blue crystal parts",
+      "hair": "thick straight bangs, hair over one eye, two triangle silver hairpins, floating geometric star orbit halo above head",
+      "outfit": "white researcher lab coat, dark high collar with black bow, gold ring ornament at collar, purple blue gradient scarf with star pattern, purple blue starry see through legwear, white high heels, gold triangle earrings, gold bracelet, floating cyan holographic data screen",
+      "body": "young adult woman, composed, slender",
+      "style_avoid": [],
+      "negative_extra": "voluptuous, exaggerated proportions"
+    }
+  }
+}

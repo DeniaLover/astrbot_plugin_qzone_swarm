@@ -1,0 +1,10 @@
+name: astrbot_plugin_qzone_swarm
+version: 0.2.0
+author: QQ Agent
+desc: QQ空间多号矩阵。多个机器人各自独立地定时发说说、评论、回复、点赞；说说素材取自各自指定群聊/私聊的聊天记录，没有素材时按人设的行动轨迹生成；评论与回复同样符合人设。每号独立 Cookie、独立上下文、独立时间表，互不顶号。支持自拍配图（NovelAI / 豆包 Seedream / 自建 SD，多端点自动回退）、场景库选题、按人设分流画师串与换装换发型。
+display_name: QQ空间多号矩阵
+repo: "https://github.com/DeniaLover/astrbot_plugin_qzone_swarm"
+entry: main.py
+support_platforms:
+  - aiocqhttp
+astrbot_version: ">=4.16,<5"

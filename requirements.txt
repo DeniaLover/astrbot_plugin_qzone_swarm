@@ -1,0 +1,3 @@
+# 运行依赖
+# httpx 由 AstrBot 本体自带（data/site-packages），此处仅作声明。
+httpx>=0.24

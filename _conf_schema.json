@@ -1,0 +1,727 @@
+{
+  "enabled": {
+    "description": "插件总开关",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后所有机器人的定时发说说与互动都会停止，聊天记录也不再采集。"
+  },
+  "admin_only": {
+    "description": "仅管理员可用命令",
+    "type": "bool",
+    "default": true,
+    "hint": "建议保持开启。关闭后任何人都能触发发说说。"
+  },
+  "default_provider_id": {
+    "description": "默认大模型提供商",
+    "type": "string",
+    "default": "",
+    "_special": "select_provider",
+    "hint": "机器人条目里没单独指定模型时使用它。支持写成 提供商id/模型名 的形式。留空则用会话默认提供商。"
+  },
+  "notify_admin_umo": {
+    "description": "结果通知会话",
+    "type": "string",
+    "default": "",
+    "hint": "填 unified_msg_origin，例如 aiocqhttp:FriendMessage:30000001。发布成功/失败会通知到这里，留空则不通知。"
+  },
+  "dry_run_all": {
+    "description": "全局演练模式",
+    "type": "bool",
+    "default": false,
+    "hint": "开启后所有号都只生成内容、不真正发布或互动。首次配置强烈建议先开启验证。"
+  },
+  "bots": {
+    "description": "机器人列表",
+    "type": "template_list",
+    "hint": "每个条目代表一个 QQ 号。platform_id 必须与 AstrBot 平台实例的 id 完全一致。",
+    "templates": {
+      "bot": {
+        "name": "机器人",
+        "display_item": "name",
+        "hint": "一个 QQ 号一份配置，各号之间凭据、人设、时间表完全独立。",
+        "items": {
+          "name": {
+            "description": "机器人名称",
+            "type": "string",
+            "default": "",
+            "hint": "仅用于显示与命令中指定，例如「达妮娅」。"
+          },
+          "platform_id": {
+            "description": "AstrBot 平台实例 id",
+            "type": "string",
+            "default": "",
+            "hint": "必填。例如 snowluma / snowluma2 / snowluma3。可在 AstrBot「平台」页面查看。"
+          },
+          "enabled": {
+            "description": "启用该机器人",
+            "type": "bool",
+            "default": true,
+            "hint": "关闭后该号的定时任务与素材采集都会跳过。"
+          },
+          "persona_id": {
+            "description": "人设",
+            "type": "string",
+            "default": "",
+            "_special": "select_persona",
+            "hint": "选择 AstrBot 中已配置的人设。发说说、评论、回复都会以这个人设的口吻生成。"
+          },
+          "persona_file": {
+            "description": "人设文件路径（可选）",
+            "type": "string",
+            "default": "",
+            "hint": "当不想用 AstrBot 人设时，可直接指向一个 md/txt 角色卡，例如 E:\\Dev\\QQ Agent\\保留资料\\roles\\达妮娅.md。"
+          },
+          "persona_prompt": {
+            "description": "人设提示词（可选）",
+            "type": "text",
+            "default": "",
+            "hint": "直接内联人设文本。填写后会覆盖 persona_file 的内容；persona_id 仍用于取名。"
+          },
+          "persona_extra": {
+            "description": "额外写作要求",
+            "type": "text",
+            "default": "",
+            "hint": "追加到人设后面的补充要求，例如「说说里不要用颜文字」。"
+          },
+          "provider_id": {
+            "description": "该号使用的大模型",
+            "type": "string",
+            "default": "",
+            "_special": "select_provider",
+            "hint": "留空使用全局默认。支持 提供商id/模型名 形式，可让不同号用不同模型。"
+          },
+          "manual_cookie": {
+            "description": "手动 Cookie（兜底）",
+            "type": "text",
+            "default": "",
+            "hint": "仅当协议端不支持自动获取凭据时才填。必须是**这个号自己**的 Cookie，填错会造成串号，请勿与其他号混用。"
+          },
+          "post_enabled": {
+            "description": "启用定时发说说",
+            "type": "bool",
+            "default": true,
+            "hint": "关闭后该号不再自动发说说（仍可手动 /qzswarm post 触发）。"
+          },
+          "post_times": {
+            "description": "发说说时间点",
+            "type": "list",
+            "default": [],
+            "hint": "可加多个，格式 HH:MM，例如 14:30、21:00。每个时间点会在其后随机偏移内触发。"
+          },
+          "post_offset_minutes": {
+            "description": "发说说随机偏移（分钟）",
+            "type": "int",
+            "default": 30,
+            "slider": {
+              "min": 0,
+              "max": 120,
+              "step": 5
+            },
+            "hint": "在时间点之后 0~N 分钟内随机触发。这个偏移是确定性的，同时会把多个号自然错开，避免同一秒集体动作。"
+          },
+          "post_max_per_day": {
+            "description": "每天最多发几条",
+            "type": "int",
+            "default": 3,
+            "slider": {
+              "min": 0,
+              "max": 20,
+              "step": 1
+            },
+            "hint": "达到上限后当天剩余时间点会被跳过。"
+          },
+          "use_material": {
+            "description": "用聊天记录当素材",
+            "type": "bool",
+            "default": true,
+            "hint": "从下面配置的群聊/私聊里取最近的聊天记录交给模型写说说。"
+          },
+          "source_groups": {
+            "description": "素材来源群号",
+            "type": "list",
+            "default": [],
+            "hint": "该号会采集这些群的消息。注意：每个号采集到的是**它自己连接**收到的消息。"
+          },
+          "source_privates": {
+            "description": "素材来源私聊QQ",
+            "type": "list",
+            "default": [],
+            "hint": "该号会采集与这些人的私聊消息。"
+          },
+          "source_ignore_users": {
+            "description": "素材中忽略的QQ",
+            "type": "list",
+            "default": [],
+            "hint": "这些人的发言不会进入素材。"
+          },
+          "material_window_minutes": {
+            "description": "素材时间窗口（分钟）",
+            "type": "int",
+            "default": 720,
+            "slider": {
+              "min": 30,
+              "max": 10080,
+              "step": 30
+            },
+            "hint": "只取最近这段时间内的聊天记录。默认 720 = 12 小时。"
+          },
+          "material_max_messages": {
+            "description": "素材最多取多少条",
+            "type": "int",
+            "default": 200,
+            "slider": {
+              "min": 10,
+              "max": 2000,
+              "step": 10
+            },
+            "hint": "取最近的 N 条消息拼成上下文。"
+          },
+          "min_material_messages": {
+            "description": "少于多少条就改用人设轨迹",
+            "type": "int",
+            "default": 6,
+            "slider": {
+              "min": 1,
+              "max": 100,
+              "step": 1
+            },
+            "hint": "聊天记录不足这个条数时，不硬凑素材，改为按人设的行动轨迹原创一条说说。"
+          },
+          "allow_selfie": {
+            "description": "允许发自拍",
+            "type": "bool",
+            "default": false,
+            "hint": "需要先在下方「自拍生图」里配置好绘画模型。未部署模型时保持关闭。"
+          },
+          "selfie_lora": {
+            "description": "该号专用的 LoRA（可选）",
+            "type": "string",
+            "default": "",
+            "hint": "留空则用提示词库里按人设登记的 LoRA。填了会覆盖库里的（只写文件名，不带 .safetensors）。"
+          },
+          "selfie_lora_weight": {
+            "description": "LoRA 权重",
+            "type": "float",
+            "default": 0.0,
+            "slider": {
+              "min": 0,
+              "max": 1.5,
+              "step": 0.05
+            },
+            "hint": "0 = 用库里的默认权重。一般 0.7-0.9；没有 LoRA 的人设留 0。"
+          },
+          "selfie_lora_trigger": {
+            "description": "LoRA 触发词",
+            "type": "string",
+            "default": "",
+            "hint": "例如 denia\\(wuthering waves\\)、hyacine (honkai: star rail)。留空用库里的。"
+          },
+          "selfie_extra_style": {
+            "description": "额外画风词",
+            "type": "string",
+            "default": "",
+            "hint": "追加到提示词里的风格词，例如「胶片质感, 暖色调」。"
+          },
+          "selfie_negative": {
+            "description": "该号专用负向词",
+            "type": "text",
+            "default": "",
+            "hint": "留空用库里的 negative。"
+          },
+          "selfie_size": {
+            "description": "该号出图尺寸",
+            "type": "string",
+            "default": "",
+            "hint": "留空用 864x1152（3:4 竖图）。"
+          },
+          "interact_enabled": {
+            "description": "启用定时互动",
+            "type": "bool",
+            "default": true,
+            "hint": "按下面的时间表去刷空间：点赞、评论、回复别人给自己的评论。"
+          },
+          "interact_times": {
+            "description": "互动时间点",
+            "type": "list",
+            "default": [],
+            "hint": "格式同发说说。留空时若开启「跟随发说说时间」则复用发说说的时间表。"
+          },
+          "interact_follow_post_times": {
+            "description": "互动跟随发说说时间",
+            "type": "bool",
+            "default": true,
+            "hint": "上面没填互动时间时，直接用发说说的时间表。"
+          },
+          "interact_offset_minutes": {
+            "description": "互动随机偏移（分钟）",
+            "type": "int",
+            "default": 45,
+            "slider": {
+              "min": 0,
+              "max": 120,
+              "step": 5
+            },
+            "hint": "同发说说的偏移逻辑。"
+          },
+          "interact_scope": {
+            "description": "互动范围",
+            "type": "string",
+            "default": "friends",
+            "options": [
+              "friends",
+              "self"
+            ],
+            "hint": "friends=刷好友动态去点赞评论；self=只看自己的说说（此时主要用于回复评论）。"
+          },
+          "interact_own_posts_only": {
+            "description": "只处理自己说说的评论",
+            "type": "bool",
+            "default": false,
+            "hint": "开启后不主动去别人说说下点赞/评论，只回复自己收到的评论。"
+          },
+          "like_enabled": {
+            "description": "允许点赞",
+            "type": "bool",
+            "default": true,
+            "hint": "关闭后完全不点赞。"
+          },
+          "comment_enabled": {
+            "description": "允许评论",
+            "type": "bool",
+            "default": true,
+            "hint": "关闭后不主动评论别人的说说。"
+          },
+          "reply_enabled": {
+            "description": "允许回复",
+            "type": "bool",
+            "default": true,
+            "hint": "别人评论了你的说说时，用人设口吻回一句。"
+          },
+          "like_probability": {
+            "description": "点赞概率",
+            "type": "float",
+            "default": 0.8,
+            "slider": {
+              "min": 0,
+              "max": 1,
+              "step": 0.05
+            },
+            "hint": "看到一条可点赞的动态时，有多大概率真的点。"
+          },
+          "comment_probability": {
+            "description": "评论概率",
+            "type": "float",
+            "default": 0.6,
+            "slider": {
+              "min": 0,
+              "max": 1,
+              "step": 0.05
+            },
+            "hint": "有多大概率去考虑评论；最终是否评论还要模型按人设判断。"
+          },
+          "like_max_per_day": {
+            "description": "每天最多点赞数",
+            "type": "int",
+            "default": 20,
+            "slider": {
+              "min": 0,
+              "max": 200,
+              "step": 1
+            },
+            "hint": "超过后当天不再点赞。"
+          },
+          "comment_max_per_day": {
+            "description": "每天最多评论数",
+            "type": "int",
+            "default": 8,
+            "slider": {
+              "min": 0,
+              "max": 100,
+              "step": 1
+            },
+            "hint": "超过后当天不再评论。"
+          },
+          "reply_max_per_day": {
+            "description": "每天最多回复数",
+            "type": "int",
+            "default": 8,
+            "slider": {
+              "min": 0,
+              "max": 100,
+              "step": 1
+            },
+            "hint": "超过后当天不再回复评论。"
+          },
+          "interact_target_count": {
+            "description": "每轮最多互动几条动态",
+            "type": "int",
+            "default": 3,
+            "slider": {
+              "min": 1,
+              "max": 20,
+              "step": 1
+            },
+            "hint": "一轮互动最多处理多少条别人的说说。"
+          },
+          "comment_max_length": {
+            "description": "评论/回复字数上限",
+            "type": "int",
+            "default": 60,
+            "slider": {
+              "min": 4,
+              "max": 300,
+              "step": 1
+            },
+            "hint": "超长会被截断。"
+          },
+          "dry_run": {
+            "description": "该号演练模式",
+            "type": "bool",
+            "default": false,
+            "hint": "只生成不发布，用于单独验证某一个号。"
+          },
+          "notify_umo": {
+            "description": "该号的通知会话",
+            "type": "string",
+            "default": "",
+            "hint": "留空则用全局通知会话。"
+          }
+        }
+      }
+    }
+  },
+  "selfie": {
+    "description": "自拍生图（绘画模型）",
+    "type": "object",
+    "hint": "当前为预留功能。部署好绘画模型后填这里，并给机器人打开「允许发自拍」即可自动配图。",
+    "items": {
+      "enabled": {
+        "description": "启用生图",
+        "type": "bool",
+        "default": false,
+        "hint": "未部署模型时保持关闭；关闭状态下「允许发自拍」不会做任何事。"
+      },
+      "mode": {
+        "description": "接口形态",
+        "type": "string",
+        "default": "openai_images",
+        "options": [
+          "openai_images",
+          "novelai",
+          "generic",
+          "disabled"
+        ],
+        "hint": "openai_images=OpenAI /images/generations 兼容（豆包 Seedream 也是这套）；novelai=NovelAI 官方 /ai/generate-image（返回 ZIP，需代理）；generic=自定义 JSON。"
+      },
+      "api_base": {
+        "description": "接口地址",
+        "type": "string",
+        "default": "",
+        "hint": "例如 http://127.0.0.1:7860/v1 或 https://api.example.com/v1。openai_images 模式会自动接 /images/generations。"
+      },
+      "api_key": {
+        "description": "接口密钥",
+        "type": "string",
+        "default": "",
+        "hint": "本地服务通常留空。"
+      },
+      "model": {
+        "description": "模型名",
+        "type": "string",
+        "default": "",
+        "hint": "例如 sdxl、flux。"
+      },
+      "size": {
+        "description": "尺寸",
+        "type": "string",
+        "default": "832x1088",
+        "hint": "默认 832x1088（≈3:4 竖图）。注意：NovelAI 的宽高必须是 64 的倍数，864 这类会直接 500；插件会自动对齐到最近的 64 倍数。"
+      },
+      "aspect_ratio": {
+        "description": "宽高比",
+        "type": "string",
+        "default": "3:4",
+        "hint": "默认 3:4 竖图。仅部分接口会用到。"
+      },
+      "timeout": {
+        "description": "超时（秒）",
+        "type": "int",
+        "default": 300,
+        "slider": {
+          "min": 10,
+          "max": 900,
+          "step": 10
+        },
+        "hint": "生图通常比文本慢很多。"
+      },
+      "response_path": {
+        "description": "结果取值路径",
+        "type": "string",
+        "default": "data.0.b64_json",
+        "hint": "从接口响应里取图片的路径，点号分隔。豆包默认回 URL，用 data.0.url；要 base64 就把 extra_params 里设 response_format=b64_json。"
+      },
+      "request_template": {
+        "description": "自定义请求体（generic 模式）",
+        "type": "text",
+        "default": "",
+        "hint": "JSON 字符串，支持 {prompt} / {negative_prompt} / {size} / {model} 占位。留空则用 OpenAI 兼容格式。"
+      },
+      "extra_params": {
+        "description": "额外请求参数（JSON 对象）",
+        "type": "dict",
+        "default": {},
+        "hint": "原样并入请求体，例如 {\"response_format\": \"url\"}、{\"guidance_scale\": 7}。"
+      },
+      "fallback_providers": {
+        "description": "生图回退端点",
+        "type": "template_list",
+        "hint": "主端点失败（网络/额度/地区限制/HTTP 错误）时按顺序尝试这些端点，任一成功即用。",
+        "templates": {
+          "img_endpoint": {
+            "name": "生图端点",
+            "display_item": "label",
+            "items": {
+              "label": {
+                "description": "备注名",
+                "type": "string",
+                "default": "",
+                "hint": "只用于日志与状态显示，例如「豆包 Seedream」。"
+              },
+              "mode": {
+                "description": "接口形态",
+                "type": "string",
+                "default": "openai_images",
+                "options": [
+                  "openai_images",
+                  "generic",
+                  "disabled"
+                ],
+                "hint": "openai_images=兼容 /images/generations；generic=自定义 JSON。"
+              },
+              "api_base": {
+                "description": "接口地址",
+                "type": "string",
+                "default": "",
+                "hint": "豆包：https://ark.cn-beijing.volces.com/api/v3；本地中转：http://127.0.0.1:8045/v1。"
+              },
+              "api_key": {
+                "description": "接口密钥",
+                "type": "string",
+                "default": "",
+                "hint": "本地服务通常留空。"
+              },
+              "model": {
+                "description": "模型名",
+                "type": "string",
+                "default": "",
+                "hint": "豆包 doubao-seedream-4-0-250828 / doubao-seedream-4-5-251128；Gemini gemini-3-pro-image / gemini-2.5-flash-image。"
+              },
+              "size": {
+                "description": "尺寸",
+                "type": "string",
+                "default": "864x1152",
+                "hint": "默认 3:4 竖图。"
+              },
+              "aspect_ratio": {
+                "description": "宽高比",
+                "type": "string",
+                "default": "3:4",
+                "hint": "默认 3:4 竖图。"
+              },
+              "timeout": {
+                "description": "超时（秒）",
+                "type": "int",
+                "default": 300,
+                "slider": {
+                  "min": 10,
+                  "max": 900,
+                  "step": 10
+                },
+                "hint": "单个端点超时。"
+              },
+              "response_path": {
+                "description": "结果取值路径",
+                "type": "string",
+                "default": "data.0.b64_json",
+                "hint": "豆包回 URL 时用 data.0.url（插件会自动下载）。"
+              },
+              "extra_params": {
+                "description": "额外请求参数（JSON 对象）",
+                "type": "dict",
+                "default": {},
+                "hint": "原样并入请求体。"
+              }
+            }
+          }
+        },
+        "default": []
+      },
+      "prompt_library": {
+        "description": "提示词库文件",
+        "type": "string",
+        "default": "",
+        "hint": "留空使用插件自带的 prompts_default.json（同目录放 prompts_local.json 可覆盖）。填绝对路径可指定自己的库。"
+      },
+      "negative_prompt": {
+        "description": "全局负向提示词",
+        "type": "text",
+        "default": "",
+        "hint": "留空则用提示词库里的 negative。填了会覆盖库里的。"
+      },
+      "use_reference": {
+        "description": "使用参考图（立绘/三视图）",
+        "type": "bool",
+        "default": true,
+        "hint": "开启后会自动读取 <数据目录>/ref/<人设名>/ 里的图片作为角色参考。这是让自拍「像本人」最有效的手段 —— 纯文字提示词只能还原发色瞳色，给了立绘/三视图才能对齐脸型、服装剪裁与配饰位置。目录为空时自动跳过。"
+      },
+      "reference_max": {
+        "description": "参考图最多用几张",
+        "type": "int",
+        "default": 4,
+        "slider": {
+          "min": 1,
+          "max": 10,
+          "step": 1
+        },
+        "hint": "按文件名排序取前面几张。建议命名成 01_立绘.png、02_三视图.png…；张数越多越准但越慢。"
+      },
+      "proxy": {
+        "description": "该端点的代理地址",
+        "type": "string",
+        "default": "",
+        "hint": "NovelAI 在国内直连会超时，必须填代理，例如 http://127.0.0.1:7897。留空则直连。"
+      },
+      "use_trigger": {
+        "description": "注入角色名（Danbooru 角色 tag）",
+        "type": "bool",
+        "default": true,
+        "hint": "与 LoRA 是两个独立开关。NovelAI 自带角色知识库，写 denia (wuthering waves) 就能直接出对角色（实测比只给外观词准得多）；本地 SD 也要它。面对豆包/Gemini 等闭源模型时建议关掉 —— 写角色名更容易撞版权审核。"
+      },
+      "lora_enabled": {
+        "description": "启用 LoRA",
+        "type": "bool",
+        "default": true,
+        "hint": "只有本地 SD / 支持 LoRA 的 SDXL 后端才需要开。用豆包、Gemini 等闭源绘画 API 时必须关掉 —— 它们不认识 <lora:...> 语法，会把整串当文字画成怪物。关掉后仍靠提示词库里的外观锚点保持角色特征。"
+      },
+      "lora": {
+        "description": "默认 LoRA",
+        "type": "string",
+        "default": "",
+        "hint": "该号没在提示词库里登记 LoRA 时使用。一般留空，让库里按人设自动选。"
+      },
+      "lora_weight": {
+        "description": "默认 LoRA 权重",
+        "type": "float",
+        "default": 0.8,
+        "slider": {
+          "min": 0,
+          "max": 1.5,
+          "step": 0.05
+        },
+        "hint": "一般 0.7-0.9。"
+      },
+      "lora_trigger": {
+        "description": "默认 LoRA 触发词",
+        "type": "string",
+        "default": "",
+        "hint": "例如 denia\\(wuthering waves\\)。"
+      },
+      "scene_first": {
+        "description": "场景优先（先挑画面再写说说）",
+        "type": "bool",
+        "default": true,
+        "hint": "开启后，发自拍时会先从场景库挑一张画面，再让模型围绕它写说说 —— 图文天然一致。场景库由 tools/build_scene_library.py 从「法典图鉴」提炼生成（scenes.json）。没有场景库时自动退化为让模型自由发挥。"
+      },
+      "artist_style": {
+        "description": "画师串（改画风）",
+        "type": "string",
+        "default": "random",
+        "hint": "random=每次随机一组（只含 NAI5 时期）；off=不注入；也可以填标题固定用某一组。画师串是 NovelAI 的 artist:xxx 权重组合，改画风最有效。"
+      },
+      "variation": {
+        "description": "换装/换发型概率",
+        "type": "float",
+        "default": 0.35,
+        "slider": {
+          "min": 0,
+          "max": 1,
+          "step": 0.05
+        },
+        "hint": "0=永远用设定里的原装造型；0.35=约三分之一概率换一套衣服或换个发型。换的只是发型与服装，发色、瞳色、身体特征（如机械义肢、声痕）永远保留，所以认得出还是她。服装从「衣柜」「更衣人偶」两个法典里挑。"
+      },
+      "anatomy_check": {
+        "description": "出图后做人体结构复检",
+        "type": "bool",
+        "default": false,
+        "hint": "开启后会调用**支持图像输入的模型**检查有没有三条腿、多手这类错误，不合格就重画。⚠️ 本机现有 key（方舟套餐端点 / 本地中转）都不支持视觉输入，实测全部返回空或乱码，所以默认关闭。等你配了可用的视觉模型再打开。"
+      },
+      "anatomy_retries": {
+        "description": "复检不合格时重画几次",
+        "type": "int",
+        "default": 1,
+        "slider": {
+          "min": 0,
+          "max": 3,
+          "step": 1
+        },
+        "hint": "仅在开启「人体结构复检」时生效。"
+      }
+    }
+  },
+  "advanced": {
+    "description": "高级设置",
+    "type": "object",
+    "items": {
+      "tick_seconds": {
+        "description": "调度轮询间隔（秒）",
+        "type": "int",
+        "default": 30,
+        "slider": {
+          "min": 10,
+          "max": 600,
+          "step": 10
+        },
+        "hint": "越小越准时，越大越省资源。"
+      },
+      "post_grace_minutes": {
+        "description": "发说说宽限期（分钟）",
+        "type": "int",
+        "default": 90,
+        "slider": {
+          "min": 5,
+          "max": 1440,
+          "step": 5
+        },
+        "hint": "若程序停机错过时间点太久，超过宽限期就不再补发，避免重启后连发。"
+      },
+      "interact_grace_minutes": {
+        "description": "互动宽限期（分钟）",
+        "type": "int",
+        "default": 90,
+        "slider": {
+          "min": 5,
+          "max": 1440,
+          "step": 5
+        },
+        "hint": "同发说说宽限期。"
+      },
+      "http_timeout": {
+        "description": "QQ空间请求超时（秒）",
+        "type": "int",
+        "default": 20,
+        "slider": {
+          "min": 5,
+          "max": 180,
+          "step": 5
+        },
+        "hint": "单次 HTTP 请求超时。"
+      },
+      "user_agent": {
+        "description": "自定义 User-Agent",
+        "type": "string",
+        "default": "",
+        "hint": "留空使用内置的 Chrome UA。"
+      }
+    }
+  }
+}
