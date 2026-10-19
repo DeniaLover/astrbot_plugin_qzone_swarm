@@ -29,3 +29,22 @@ python tools/build_scene_library.py
 
 自拍/绘画如果要启用，再填「自拍生图」那一栏（NovelAI / 豆包 / 自建 SD 都支持，
 详见 README 对应章节）。
+
+---
+
+## 关于第三方内容
+
+本仓库的 **MIT 许可证只覆盖代码本身**。
+
+### 场景库（不随本仓库分发）
+
+`qzone_swarm/scenes.json` 由 `tools/build_scene_library.py` 从
+「法典图鉴」<https://novelai.quicktagcloud.com/> 生成，**不在本仓库中**。
+该数据集的内容版权归各法典作者——凉夏之夜、叫我千藤就好了、Sol、渡鸦、
+戒红所、拉风de茶、解构原典编撰组——所有，**请勿二次分发**，仅限本地自用。
+
+### 角色外观描述
+
+`qzone_swarm/prompts_default.json` 里的角色外观描述，是基于公开角色资料的
+二次创作整理，角色版权归米哈游 / 库洛游戏所有。替换成你自己的角色时，
+请注意同样的问题。

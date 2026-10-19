@@ -81,10 +81,10 @@ AstrBot\data\config\astrbot_plugin_qzone_swarm_config.json
 
 | 机器人 | 平台实例 | QQ | 人设 | 发说说时间 | 互动时间 |
 | --- | --- | --- | --- | --- | --- |
-| 娅娅 | `snowluma` | 10000001 | 达妮娅 | 12:30、21:00 | 10:00、18:30 |
-| 西西 | `snowluma2` | 10000002 | 西格莉卡 | 11:00、19:30 | 09:30、16:00 |
-| 堇宝 | `snowluma3` | 10000003 | 风堇 | 10:00、20:30 | 13:00、22:00 |
-| 莫宁 | `snowluma4` | 10000004 | 莫宁 | 13:30、22:30 | 11:30、20:00 |
+| 机器人A | `onebot_1` | 10000001 | 达妮娅 | 12:30、21:00 | 10:00、18:30 |
+| 机器人B | `onebot_2` | 10000002 | 西格莉卡 | 11:00、19:30 | 09:30、16:00 |
+| 机器人C | `onebot_3` | 10000003 | 风堇 | 10:00、20:30 | 13:00、22:00 |
+| 机器人D | `onebot_4` | 10000004 | 莫宁 | 13:30、22:30 | 11:30、20:00 |
 
 四个号的时间点经确定性偏移后**两两不撞车**（实测 8 个时刻互不相同）。
 素材来源四者相同：群 `20000001` + 私聊 `30000001`。
@@ -107,7 +107,7 @@ AstrBot\data\config\astrbot_plugin_qzone_swarm_config.json
 启用步骤：
 1. 在 AstrBot 插件页确认 `astrbot_plugin_qzone_swarm` 已加载（首次可能需要重载插件）。
 2. 用 `/qzswarm status` 确认四个号的登录态都拿到了。
-3. 用 `/qzswarm preview 娅娅` 看看生成效果。
+3. 用 `/qzswarm preview 机器人A` 看看生成效果。
 4. 满意后关闭 `dry_run_all`。
 
 ---
@@ -128,7 +128,7 @@ AstrBot\data\config\astrbot_plugin_qzone_swarm_config.json
 /qzswarm reload                重新载入插件配置
 ```
 
-`<机器人>` 可以填机器人名称（娅娅）、平台实例 id（snowluma）或人设名。
+`<机器人>` 可以填机器人名称（`机器人A`）、平台实例 id（`onebot_1`）或人设名。
 
 ---
 
@@ -196,10 +196,10 @@ AstrBot\data\config\astrbot_plugin_qzone_swarm_config.json
 
 ```
 AstrBot/data/plugin_data/astrbot_plugin_qzone_swarm/ref/
-├── 达妮娅/      ← 娅娅的立绘、三视图放这里
-├── 西格莉卡/    ← 西西的
-├── 风堇/        ← 堇宝的
-└── 莫宁/        ← 莫宁的
+├── 达妮娅/      ← 机器人A 的立绘放这里
+├── 西格莉卡/    ← 机器人B 的
+├── 风堇/        ← 机器人C 的
+└── 莫宁/        ← 机器人D 的
 ```
 
 * 支持 `png` / `jpg` / `jpeg` / `webp`
@@ -260,16 +260,16 @@ AstrBot/data/plugin_data/astrbot_plugin_qzone_swarm/ref/
 
 | 机器人 | 人设 | LoRA | 触发词 |
 | --- | --- | --- | --- |
-| 娅娅 | 达妮娅 | ✅ `wuthering_waves_denia_il` (SDXL dim32) | `denia\(wuthering waves\)` |
-| 堇宝 | 风堇 | ✅ `honkai_star_rail_hyacine_il` (SDXL dim48) | `hyacine (honkai: star rail)` |
+| 机器人A | 达妮娅 | ✅ `wuthering_waves_denia_il` (SDXL dim32) | `denia\(wuthering waves\)` |
+| 机器人C | 风堇 | ✅ `honkai_star_rail_hyacine_il` (SDXL dim48) | `hyacine (honkai: star rail)` |
 
 **网上有、本机还没下的两个**（都已选定二次元向的 Illustrious 版本，
 与默认底模 `novaAnimeXL_ilV190` 同架构）：
 
 | 机器人 | 人设 | 推荐 LoRA | 大小 | Civitai |
 | --- | --- | --- | --- | --- |
-| 西西 | 西格莉卡 | `wuthering_waves_sigrika_il`<br>触发词 `sigrika \\(wuthering waves\\)` | 20.6 MB | [2428772](https://civitai.com/models/2428772) |
-| 莫宁 | 莫宁 | `wuthering_waves_mornye_il`<br>触发词 `mornye \\(wuthering waves\\)` | 40.9 MB | [2199574](https://civitai.com/models/2199574) |
+| 机器人B | 西格莉卡 | `wuthering_waves_sigrika_il`<br>触发词 `sigrika \\(wuthering waves\\)` | 20.6 MB | [2428772](https://civitai.com/models/2428772) |
+| 机器人D | 莫宁 | `wuthering_waves_mornye_il`<br>触发词 `mornye \\(wuthering waves\\)` | 40.9 MB | [2199574](https://civitai.com/models/2199574) |
 
 > 这两个的元数据以 `recommended_lora` / `recommended_trigger` / `recommended_base` /
 > `download` 存在提示词库里。**下载后把文件改名成上面的名字放进 `models/Lora`，
@@ -609,7 +609,7 @@ ValueError: Formatting field not found in record: 'plugin_tag'
 （它返回的正是 `astrbot.plugin.astrbot_plugin_qzone_swarm` 这个**确切**名字的
 logger，不拼子名）。需要区分模块时靠 AstrBot 格式串里的 `source_file`
 （取自文件路径，会显示成 `qzone_swarm.config:302`）；需要区分机器人时用
-`get_bot_logger("娅娅")`，它在**消息**里加前缀而不改 logger 名字。
+`get_bot_logger("机器人A")`，它在**消息**里加前缀而不改 logger 名字。
 
 `logging_compat.py` 还额外挂了一个兜底过滤器，自己补齐格式串需要的字段，
 这样即使将来 AstrBot 的装配方式变了，**日志也不会再把业务打挂**。

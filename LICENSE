@@ -19,17 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-## 关于第三方内容
-
-本 MIT 许可**只覆盖本仓库的代码**。
-
-仓库**不包含** `qzone_swarm/scenes.json`（由 `tools/build_scene_library.py`
-从「法典图鉴」https://novelai.quicktagcloud.com/ 生成）。该数据集的内容版权归
-各法典作者（凉夏之夜、叫我千藤就好了、Sol、渡鸦、戒红所、拉风de茶、
-解构原典编撰组）所有，**请勿二次分发**，仅限本地自用。
-
-`qzone_swarm/prompts_default.json` 里的角色外观描述，是基于公开角色资料的
-二次创作整理，角色版权归米哈游 / 库洛游戏所有。
